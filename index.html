@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOST CREATIVE | Digital Store</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#090909;color:#fff;font-family:Arial,sans-serif}
+header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #292929;position:sticky;top:0;background:#090909;z-index:5}
+.logo{font-size:21px;font-weight:900;letter-spacing:3px}
+button{cursor:pointer;border:0;padding:12px 18px;font-weight:bold}
+.cartbtn,.buy{background:#fff;color:#000;border-radius:5px}
+.hero{text-align:center;padding:95px 20px 75px;background:radial-gradient(ellipse at center,#292929,#090909 70%)}
+.hero small{letter-spacing:5px;color:#aaa}
+.hero h1{font-size:clamp(38px,8vw,76px);margin:22px 0;letter-spacing:3px}
+.hero p{color:#aaa;line-height:1.7}
+.shop{padding:55px 7%}
+.shop h2{font-size:30px;margin-bottom:10px}
+.sub{color:#999;margin-bottom:30px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.card{background:#151515;border:1px solid #303030;border-radius:9px;overflow:hidden}
+.art{height:175px;display:grid;place-items:center;background:linear-gradient(135deg,#292929,#101010);font-size:27px;font-weight:900;letter-spacing:3px}
+.info{padding:20px}
+.info p{color:#999;font-size:14px;margin:10px 0}
+.price{font-size:21px;margin:15px 0}
+.buy{width:100%;border-radius:4px}
+.buy:hover,.cartbtn:hover{background:#ccc}
+.cart-section{padding:35px 7%;background:#151515}
+.cart-section h2{margin-bottom:20px}
+.cart-item{display:flex;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid #333}
+.cart-item button{padding:5px 10px}
+#total{font-size:22px;margin:20px 0}
+.checkout{max-width:480px;margin-top:20px}
+input{width:100%;padding:13px;margin:7px 0;background:#222;color:white;border:1px solid #444;border-radius:4px}
+.checkout button{width:100%;margin-top:10px;background:white;color:black}
+footer{text-align:center;padding:35px;color:#888;border-top:1px solid #333}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">LOST CREATIVE.</div>
+<button class="cartbtn" onclick="document.getElementById('cart').scrollIntoView()">CART (<span id="count">0</span>)</button>
+</header>
+
+<section class="hero">
+<small>DIGITAL PRODUCTS STORE</small>
+<h1>CREATE. DISCOVER. OWN.</h1>
+<p>Discover digital products designed to organize,<br>inspire and simplify your everyday life.</p>
+<br>
+<button class="cartbtn" onclick="document.getElementById('shop').scrollIntoView()">EXPLORE STORE</button>
+</section>
+
+<section class="shop" id="shop">
+<h2>OUR PRODUCTS</h2>
+<p class="sub">Explore our digital collection.</p>
+<div class="products" id="products"></div>
+</section>
+
+<section class="cart-section" id="cart">
+<h2>YOUR CART</h2>
+<div id="items">Your cart is empty.</div>
+<div id="total">Total: ₹0</div>
+<div class="checkout">
+<h3>Checkout</h3>
+<input id="name" placeholder="Your name">
+<input id="email" type="email" placeholder="Your email">
+<button onclick="checkout()">PLACE TEST ORDER</button>
+<p style="color:#999;font-size:12px;margin-top:12px">Demo checkout only. No payment is collected and no real order is sent.</p>
+</div>
+</section>
+
+<footer>
+<h3>LOST CREATIVE.</h3>
+<p style="margin-top:10px">DIGITAL PRODUCTS • CREATIVE IDEAS</p>
+<p style="margin-top:18px">© 2026 LOST CREATIVE. All rights reserved.</p>
+</footer>
+
+<script>
+const products=[
+{id:1,name:"Student Study Planner",price:99,desc:"Organize your study sessions and daily goals.",art:"STUDY"},
+{id:2,name:"Digital Timetable Pack",price:49,desc:"Simple and organized daily schedules.",art:"PLAN"},
+{id:3,name:"Premium Wallpaper Pack",price:49,desc:"A collection of digital wallpapers.",art:"WALL"},
+{id:4,name:"Student Productivity Bundle",price:149,desc:"A complete digital organization bundle.",art:"BUNDLE"}
+];
+
+let cart=JSON.parse(localStorage.getItem("lc_cart")||"[]");
+
+function save(){
+localStorage.setItem("lc_cart",JSON.stringify(cart));
+renderCart();
+}
+
+function renderProducts(){
+document.getElementById("products").innerHTML=products.map(p=>`
+<div class="card">
+<div class="art">${p.art}</div>
+<div class="info">
+<h3>${p.name}</h3>
+<p>${p.desc}</p>
+<div class="price">₹${p.price}</div>
+<button class="buy" onclick="add(${p.id})">ADD TO CART</button>
+</div>
+</div>`).join("");
+}
+
+function add(id){
+let found=cart.find(x=>x.id===id);
+if(found)found.qty++;
+else cart.push({id,qty:1});
+save();
+alert("Product added to cart!");
+}
+
+function removeItem(id){
+cart=cart.filter(x=>x.id!==id);
+save();
+}
+
+function changeQty(id,amount){
+let item=cart.find(x=>x.id===id);
+if(!item)return;
+item.qty+=amount;
+if(item.qty<=0)removeItem(id);
+else save();
+}
+
+function renderCart(){
+let count=cart.reduce((s,x)=>s+x.qty,0);
+document.getElementById("count").textContent=count;
+let total=0;
+let html=cart.map(item=>{
+let p=products.find(x=>x.id===item.id);
+total+=p.price*item.qty;
+return `<div class="cart-item">
+<div>${p.name}<br>₹${p.price} × ${item.qty}</div>
+<div>
+<button onclick="changeQty(${p.id},-1)">−</button>
+<button onclick="changeQty(${p.id},1)">+</button>
+<button onclick="removeItem(${p.id})">Remove</button>
+</div></div>`;
+}).join("");
+document.getElementById("items").innerHTML=html||"Your cart is empty.";
+document.getElementById("total").textContent="Total: ₹"+total;
+}
+
+function checkout(){
+if(!cart.length){alert("Your cart is empty!");return;}
+let name=document.getElementById("name").value.trim();
+let email=document.getElementById("email").value.trim();
+if(!name||!email||!email.includes("@")){
+alert("Please enter a valid name and email.");
+return;
+}
+alert("Demo checkout completed. This is not a real purchase. Payment and order processing are not connected yet.");
+}
+
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>
